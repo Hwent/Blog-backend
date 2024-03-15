@@ -22,6 +22,43 @@ app.get("/", async (req, res) => {
   res.json({ posts, comments, users });
 });
 
+//clear db : dev only
+app.delete("/", async (req, res) => {
+  await Post.deleteMany({});
+  await Comment.deleteMany({});
+  await User.deleteMany({});
+
+  res.json({ message: "cleared" });
+});
+
+app.get("/users", async (req, res) => {
+  const users = await User.find({});
+  res.json(users);
+});
+
+app.post("/signup", async (req, res) => {
+  const user = new User(req.body);
+  await user.save();
+  res.json(user);
+});
+
+app.get("/users/:id", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  res.json(user);
+});
+
+app.put("/users/:id", async (req, res) => {
+  const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
+  res.json(user);
+});
+
+app.delete("/users/:id", async (req, res) => {
+  const user = await User.findByIdAndDelete(req.params.id);
+  res.json(user);
+});
+
 app.get("/posts", async (req, res) => {
   const posts = await Post.find({});
   res.json(posts);
