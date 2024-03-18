@@ -1,10 +1,12 @@
 const express = require("express");
-const app = express();
+
 const Post = require("./models/Post");
 const Comment = require("./models/Comment");
 const User = require("./models/User");
-app.use(express.json());
 
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 // Connect to MongoDB
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
@@ -40,6 +42,16 @@ app.post("/signup", async (req, res) => {
   const user = new User(req.body);
   await user.save();
   res.json(user);
+});
+
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+  const user = await User.findOne({ username, password });
+  if (user) {
+    res.json(user);
+  } else {
+    res.json({ message: "Invalid username or password" });
+  }
 });
 
 app.get("/users/:id", async (req, res) => {
