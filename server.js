@@ -1,12 +1,12 @@
 const express = require("express");
+const session = require("express-session");
+const passport = require("passport");
+const crypto = require("crypto");
 
 const Post = require("./models/Post");
 const Comment = require("./models/Comment");
 const User = require("./models/User");
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 // Connect to MongoDB
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
@@ -15,6 +15,14 @@ dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 
 mongoose.connect(MONGODB_URI);
+
+require("./config/passport")(passport);
+
+const app = express();
+// This will initialize the passport object on every request
+app.use(passport.initialize());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", async (req, res) => {
   const posts = await Post.find({});
