@@ -52,8 +52,19 @@ app.post("/signup", async (req, res) => {
     hash: hash,
     salt: salt,
   });
-  await user.save();
-  res.json(user);
+  user
+    .save()
+    .then((user) => {
+      const jwt = helper.issueJWT(user);
+      res.json({
+        success: true,
+        user: user,
+        message: "user created",
+        token: jwt.token,
+        expiresIn: jwt.expires,
+      });
+    })
+    .catch((err) => next(err));
 });
 
 app.post("/login", async (req, res) => {});
