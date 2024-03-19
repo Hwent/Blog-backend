@@ -1,7 +1,5 @@
 const express = require("express");
-const session = require("express-session");
 const passport = require("passport");
-const crypto = require("crypto");
 
 const Post = require("./models/Post");
 const Comment = require("./models/Comment");
@@ -17,6 +15,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 mongoose.connect(MONGODB_URI);
 
 require("./config/passport")(passport);
+const helper = require("./lib/helper");
 
 const app = express();
 // This will initialize the passport object on every request
@@ -47,20 +46,17 @@ app.get("/users", async (req, res) => {
 });
 
 app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
+  const { salt, hash } = helper.genPassword(req.body.password);
+  const user = new User({
+    username: req.body.username,
+    hash: hash,
+    salt: salt,
+  });
   await user.save();
   res.json(user);
 });
 
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-  const user = await User.findOne({ username, password });
-  if (user) {
-    res.json(user);
-  } else {
-    res.json({ message: "Invalid username or password" });
-  }
-});
+app.post("/login", async (req, res) => {});
 
 app.get("/users/:id", async (req, res) => {
   const user = await User.findById(req.params.id);
