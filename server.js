@@ -1,6 +1,6 @@
 const express = require("express");
 const passport = require("passport");
-
+const cors = require("cors");
 const Post = require("./models/Post");
 const Comment = require("./models/Comment");
 const User = require("./models/User");
@@ -18,6 +18,7 @@ require("./config/passport")(passport);
 const helper = require("./lib/helper");
 
 const app = express();
+app.use(cors());
 // This will initialize the passport object on every request
 app.use(passport.initialize());
 app.use(express.json());
@@ -45,7 +46,14 @@ app.get("/users", async (req, res) => {
   res.json(users);
 });
 
-app.post("/signup", async (req, res) => {
+app.post("/signup", (req, res) => {
+  User.findOne({ username: req.body.username }).then((user) => {
+    if (user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "username already taken" });
+    }
+  });
   const { salt, hash } = helper.genPassword(req.body.password);
   const user = new User({
     username: req.body.username,
@@ -67,7 +75,37 @@ app.post("/signup", async (req, res) => {
     .catch((err) => next(err));
 });
 
-app.post("/login", async (req, res) => {});
+app.post("/login", (req, res) => {
+  User.findOne({ username: req.body.username }).then((user) => {
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "could not find user" });
+    }
+
+    const isValid = helper.validPassword(
+      req.body.password,
+      user.hash,
+      user.salt
+    );
+
+    if (isValid) {
+      const jwt = helper.issueJWT(user);
+
+      res.status(200).json({
+        success: true,
+        user: user,
+        message: "user found & logged in",
+        token: jwt.token,
+        expiresIn: jwt.expires,
+      });
+    } else {
+      res
+        .status(401)
+        .json({ success: false, message: "you entered the wrong password" });
+    }
+  });
+});
 
 app.get("/users/:id", async (req, res) => {
   const user = await User.findById(req.params.id);
@@ -87,7 +125,7 @@ app.delete("/users/:id", async (req, res) => {
 });
 
 app.get("/posts", async (req, res) => {
-  const posts = await Post.find({});
+  const posts = await Post.find({}).populate("author");
   res.json(posts);
 });
 

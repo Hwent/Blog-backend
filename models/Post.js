@@ -31,4 +31,12 @@ const PostSchema = new mongoose.Schema({
   ],
 });
 
+PostSchema.virtual("formattedDate").get(function () {
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  return this.createdAt.toLocaleDateString(undefined, options);
+});
+
+PostSchema.set("toJSON", { virtuals: true });
+PostSchema.set("toObject", { virtuals: true });
+
 module.exports = mongoose.model("Post", PostSchema);
