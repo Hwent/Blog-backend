@@ -124,40 +124,40 @@ app.delete("/users/:id", async (req, res) => {
   res.json(user);
 });
 
-app.get("/posts", async (req, res) => {
+app.get("/blog", async (req, res) => {
   const posts = await Post.find({}).populate("author");
   res.json(posts);
 });
 
-app.post("/posts", async (req, res) => {
+app.post("/blog", async (req, res) => {
   const post = new Post(req.body);
   await post.save();
   res.json(post);
 });
 
-app.get("/posts/:id", async (req, res) => {
+app.get("/blog/:id", async (req, res) => {
   const post = await Post.findById(req.params.id);
   res.json(post);
 });
 
-app.put("/posts/:id", async (req, res) => {
+app.put("/blog/:id", async (req, res) => {
   const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
   });
   res.json(post);
 });
 
-app.delete("/posts/:id", async (req, res) => {
+app.delete("/blog/:id", async (req, res) => {
   const post = await Post.findByIdAndDelete(req.params.id);
   res.json(post);
 });
 
-app.get("/posts/:postId/comments", async (req, res) => {
+app.get("/blog/:postId/comments", async (req, res) => {
   const post = await Post.findById(req.params.postId).populate("comments");
   res.json(post.comments);
 });
 
-app.post("/posts/:postId/comments", async (req, res) => {
+app.post("/blog/:postId/comments", async (req, res) => {
   const post = await Post.findById(req.params.postId);
   const comment = new Comment(req.body);
   post.comments.push(comment);
